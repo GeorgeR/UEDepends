@@ -42,6 +42,9 @@ class ModuleInfo(object):
                 if file.endswith('.h'):
                     self.headers.append(file)
 
+    def get_referenced_modules(self):
+        return self.public_dependency_module_names + self.private_dependency_module_names
+
     # Find actual dependencies (from includes) and return a list of redundant public and private modules
     def discover_dependencies(self, other_modules = None):
         redundant_module_references = self.public_dependency_module_names + self.private_dependency_module_names
@@ -58,6 +61,9 @@ class ModuleInfo(object):
                                     if module_reference_name in other_modules:
                                         module = other_modules[module_reference_name]
                                         if module.has_header(match):
+                                            for referenced_module in module.get_referenced_modules():
+                                                if referenced_module in redundant_module_references:
+                                                    redundant_module_references.remove(referenced_module)
                                             redundant_module_references.remove(module_reference_name)
 
         return redundant_module_references
